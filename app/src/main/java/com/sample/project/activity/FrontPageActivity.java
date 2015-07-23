@@ -6,7 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.sample.project.R;
-import com.sample.project.fragment.FrontPageFragmnet;
+import com.sample.project.fragment.FrontPageFragment;
 
 
 public class FrontPageActivity extends Activity {
@@ -15,7 +15,7 @@ public class FrontPageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_front_page);
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction().add(R.id.container, new FrontPageFragmnet()).commit();
+            getFragmentManager().beginTransaction().add(R.id.container, new FrontPageFragment()).commit();
         }
     }
 
