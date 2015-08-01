@@ -1,8 +1,11 @@
 package com.loginext.shipme.fragment;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -14,14 +17,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.loginext.shipme.R;
+import com.loginext.shipme.common.AppConstants;
+import com.loginext.shipme.common.LogiNextAutoCompleteTextView;
 import com.loginext.shipme.model.Barcode;
 import com.loginext.shipme.model.ConsignmentDetails;
 import com.loginext.shipme.model.ConsignmentType;
@@ -35,19 +39,19 @@ import com.loginext.shipme.presenter.BasePresenter;
 import com.loginext.shipme.presenter.BasePresenterImp;
 import com.loginext.shipme.presenter.RequesterView;
 
-public class FrontPageFragment extends Fragment implements RequesterView, OnClickListener, OnItemSelectedListener{
+public class FrontPageFragment extends Fragment implements RequesterView, OnClickListener {
   private BasePresenter basePresenter;
 
   /**
    * View Elements
    */
   private EditText mLRNumber;
-  private AutoCompleteTextView mOrigin;
-  private AutoCompleteTextView mDestination;
-  private AutoCompleteTextView mConsignmentType;
-  private AutoCompleteTextView mVehicleNumber;
-  private AutoCompleteTextView mBarCode;
-  private AutoCompleteTextView mDriverName;
+  private LogiNextAutoCompleteTextView mOrigin;
+  private LogiNextAutoCompleteTextView mDestination;
+  private LogiNextAutoCompleteTextView mConsignmentType;
+  private LogiNextAutoCompleteTextView mVehicleNumber;
+  private LogiNextAutoCompleteTextView mBarCode;
+  private LogiNextAutoCompleteTextView mDriverName;
   private EditText mDriverPhoneNumber;
   private EditText mVehicleType;
   private EditText mVehicleCapacity;
@@ -68,34 +72,94 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
    * Variables
    */
   private long simID;
-  private String modeOfTransport;
+  private String modeOfTransport = "ROAD";
   private double originDestinationLatitude;
   private double originDestinationLongitude;
-  private String clientShipmentID;
+  private String clientShipmentID = "";
   private double originLatitude;
   private double originLongitude;
-  private long clientId;
+  private long clientId = 12;
   private long branchId;
   private long vehicleId;
   private long driverId;
   private String tripDate;
-  private long createByUserId;
-  private long updatedByUserId;
+  private long createByUserId = 12;
+  private long updatedByUserId = 12;
 
-  private SlideDateTimeListener listener = new SlideDateTimeListener() {
+  /**
+   * Lists
+   */
+  @SuppressWarnings("unused") private List<ConsignmentType> consignmentTypes;
+  private List<Origin> origins;
+  private List<Destination> destinations;
+  private List<Barcode> barcodes;
+  private List<Vehicle> vehicles;
+  private List<Driver> drivers;
 
+  private SlideDateTimeListener tripDateListener = new SlideDateTimeListener() {
     @Override public void onDateTimeSet(Date date) {
+      mTripDate.setText(date.toString());
 
+      tripDate = parseDate(date);
     }
+  };
 
-    @Override public void onDateTimeCancel() {
+  private SlideDateTimeListener vehicleReportingTimeListener = new SlideDateTimeListener() {
+    @Override public void onDateTimeSet(Date date) {
+      mVehicleReportingTime.setText(date.toString());
+    }
+  };
 
-    };
+  private OnItemClickListener originItemClickListener = new OnItemClickListener() {
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      Origin origin = origins.get(position);
+      originLatitude = Double.parseDouble(origin.getLatitude());
+      originLongitude = Double.parseDouble(origin.getLongitude());
+      branchId = Long.parseLong(origin.getClientBranchId());
+    }
+  };
 
+  private OnItemClickListener destinationItemClickListener = new OnItemClickListener() {
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      Destination destination = destinations.get(position);
+      originDestinationLatitude = Double.parseDouble(destination.getLatitude());
+      originDestinationLongitude = Double.parseDouble(destination.getLongitude());
+    }
+  };
+
+  private OnItemClickListener consignmentTypeItemClickListener = new OnItemClickListener() {
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    }
+  };
+
+  private OnItemClickListener vehicleNumberItemClickListener = new OnItemClickListener() {
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      Vehicle vehicle = vehicles.get(position);
+      mVehicleType.setText(vehicle.getVehicleType());
+      mVehicleCapacity.setText(vehicle.getCapacityInUnits());
+      String barcode = findBarCode(vehicle.getDeviceId());
+      mBarCode.setText(barcode);
+      simID = Long.parseLong(vehicle.getSimId());
+      vehicleId = Long.parseLong(vehicle.getVehicleId());
+    }
+  };
+
+  private OnItemClickListener driverNameItemClickListener = new OnItemClickListener() {
+    @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      Driver driver = drivers.get(position);
+      mDriverPhoneNumber.setText(driver.getPhoneNumber());
+      driverId = Long.parseLong(driver.getDriverId());
+    }
   };
 
   public FrontPageFragment() {
 
+  }
+
+  private String parseDate(Date date) {
+    SimpleDateFormat sdf = new SimpleDateFormat(AppConstants.DATE_FORMAT_1, Locale.US);
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return sdf.format(date);
   }
 
   @Override public void onAttach(Activity activity) {
@@ -103,9 +167,6 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     basePresenter = BasePresenterImp.getInstance();
     basePresenter.setObserver(this);
     mSlideDateTimePickerBuilder = new SlideDateTimePicker.Builder(getActivity().getSupportFragmentManager());
-    mSlideDateTimePickerBuilder.setListener(listener);
-    mSlideDateTimePickerBuilder.setInitialDate(new Date());
-    mSlideDateTimePicker = mSlideDateTimePickerBuilder.build();
   }
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -118,30 +179,36 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   private void findViewByIds(View view) {
     mLRNumber = (EditText) view.findViewById(R.id.lr_number);
 
-    mOrigin = (AutoCompleteTextView) view.findViewById(R.id.origin);
+    mOrigin = (LogiNextAutoCompleteTextView) view.findViewById(R.id.origin);
     mOrigin.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
-    mOrigin.setOnClickListener(this);
 
-    mDestination = (AutoCompleteTextView) view.findViewById(R.id.destination);
+    mOrigin.setOnClickListener(this);
+    mOrigin.setOnItemClickListener(originItemClickListener);
+
+    mDestination = (LogiNextAutoCompleteTextView) view.findViewById(R.id.destination);
     mDestination.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
     mDestination.setOnClickListener(this);
-    mDestination.setOnItemSelectedListener(this);
+    mDestination.setOnItemClickListener(destinationItemClickListener);
 
-    mConsignmentType = (AutoCompleteTextView) view.findViewById(R.id.consignment_type);
+    mConsignmentType = (LogiNextAutoCompleteTextView) view.findViewById(R.id.consignment_type);
     mConsignmentType.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
     mConsignmentType.setOnClickListener(this);
+    mConsignmentType.setOnItemClickListener(consignmentTypeItemClickListener);
 
-    mVehicleNumber = (AutoCompleteTextView) view.findViewById(R.id.vehicle_number);
+    mVehicleNumber = (LogiNextAutoCompleteTextView) view.findViewById(R.id.vehicle_number);
     mVehicleNumber.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
     mVehicleNumber.setOnClickListener(this);
+    mVehicleNumber.setOnItemClickListener(vehicleNumberItemClickListener);
 
-    mBarCode = (AutoCompleteTextView) view.findViewById(R.id.barcode);
+    mBarCode = (LogiNextAutoCompleteTextView) view.findViewById(R.id.barcode);
     mBarCode.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
-    mBarCode.setOnClickListener(this);
+    /*mBarCode.setOnClickListener(this);*/
+    disableEditText(mBarCode);
 
-    mDriverName = (AutoCompleteTextView) view.findViewById(R.id.driver_name);
+    mDriverName = (LogiNextAutoCompleteTextView) view.findViewById(R.id.driver_name);
     mDriverName.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
     mDriverName.setOnClickListener(this);
+    mDriverName.setOnItemClickListener(driverNameItemClickListener);
 
     mDriverPhoneNumber = (EditText) view.findViewById(R.id.driver_phone_number);
     disableEditText(mDriverPhoneNumber);
@@ -180,6 +247,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onConsignmentTypeReceived(List<ConsignmentType> consignmentTypes) {
+    this.consignmentTypes = consignmentTypes;
+
     List<String> lookupCds = new ArrayList<String>();
 
     for(ConsignmentType consignmentType : consignmentTypes) {
@@ -194,6 +263,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onOriginReponse(List<Origin> origins) {
+    this.origins = origins;
+
     List<String> originStrings = new ArrayList<String>();
 
     for(Origin origin : origins) {
@@ -209,6 +280,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onDestinationReceived(List<Destination> destinations) {
+    this.destinations = destinations;
+
     List<String> destinationStrings = new ArrayList<String>();
 
     for(Destination destination : destinations) {
@@ -224,6 +297,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onBarcodeReceived(List<Barcode> barcodes) {
+    this.barcodes = barcodes;
+
     List<String> barcodeStrings = new ArrayList<String>();
     List<String> deviceIdStrings = new ArrayList<String>();
 
@@ -246,6 +321,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onVehicleReceived(List<Vehicle> vehicles) {
+    this.vehicles = vehicles;
+
     List<String> vehicleNumberStrings = new ArrayList<String>();
 
     for(Vehicle vehicle : vehicles) {
@@ -261,6 +338,8 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   @Override public void onDriverReceived(List<Driver> drivers) {
+    this.drivers = drivers;
+
     List<String> driverNames = new ArrayList<String>();
 
     for(Driver driver : drivers) {
@@ -284,9 +363,9 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     case R.id.destination:
       mDestination.showDropDown();
       break;
-    case R.id.barcode:
+      /*case R.id.barcode:
       mBarCode.showDropDown();
-      break;
+      break;*/
     case R.id.vehicle_number:
       mVehicleNumber.showDropDown();
       break;
@@ -297,9 +376,15 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
       mConsignmentType.showDropDown();
       break;
     case R.id.trip_date :
+      mSlideDateTimePickerBuilder.setInitialDate(new Date());
+      mSlideDateTimePickerBuilder.setListener(tripDateListener);
+      mSlideDateTimePicker = mSlideDateTimePickerBuilder.build();
       mSlideDateTimePicker.show();
       break;
     case R.id.vehicle_reporting_time:
+      mSlideDateTimePickerBuilder.setInitialDate(new Date());
+      mSlideDateTimePickerBuilder.setListener(vehicleReportingTimeListener);
+      mSlideDateTimePicker = mSlideDateTimePickerBuilder.build();
       mSlideDateTimePicker.show();
       break;
     case R.id.submit:
@@ -320,7 +405,7 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
         consignmentDetails.setClientId(clientId);
         consignmentDetails.setClientBranchId(branchId);
         consignmentDetails.setDestinationClientNodeId(0);
-        consignmentDetails.setNumberOfItems(Integer.parseInt(mNumberOfItems.getText().toString()));
+        consignmentDetails.setNumberOfItems(Long.parseLong(mNumberOfItems.getText().toString()));
         consignmentDetails.setChallanNumber(mChallanNumber.getText().toString());
         consignmentDetails.setSealNumber(mSealNumber.getText().toString());
         consignmentDetails.setVehicleId(vehicleId);
@@ -351,12 +436,16 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     editText.setBackgroundColor(Color.TRANSPARENT); 
   }
 
-  @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-    Toast.makeText(getActivity(), "Item Selected at position " + position, Toast.LENGTH_SHORT).show();
-  }
+  private String findBarCode(String deviceId) {
+    for(Barcode barcode : barcodes) {
+      if(!barcode.getDeviceId().equalsIgnoreCase(deviceId)) {
+        continue;
+      }
 
-  @Override public void onNothingSelected(AdapterView<?> parent) {
+      return barcode.getDeviceId();
+    }
 
+    return "";
   }
 
 }

@@ -92,6 +92,8 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
                 origin.setLatitude(object.optString("latitude"));
                 origin.setLongitude(object.optString("longitude"));
                 origin.setName(object.optString("name"));
+
+                origins.add(origin);
               }
             }
 
@@ -289,6 +291,12 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
     }
   };
 
+  private ErrorListener genericErrorListener = new ErrorListener() {
+    @Override public void onErrorResponse(VolleyError error) {
+
+    }
+  };
+
   public BaseInteractorImp(ResponseListener responseListener) {
     context = ShipmentApplication.getInstance().getApplicationContext();
     this.responseListener = responseListener;
@@ -312,7 +320,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
       e.printStackTrace();
     }
 
-    makeDataRequest(ORIGIN_URL, originListener, null, jsonData);
+    makeDataRequest(ORIGIN_URL, originListener, genericErrorListener, jsonData);
   }
 
   @Override public void fetchDestination() {
@@ -323,12 +331,12 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
       e.printStackTrace();
     }
 
-    makeDataRequest(DESTINATION_URL, destinationListener, null, jsonData);
+    makeDataRequest(DESTINATION_URL, destinationListener, genericErrorListener, jsonData);
   }
 
   @Override public void fetchBarcode() {
     JSONObject jsonData = new JSONObject();
-    makeDataRequest(BARCODE_URL, barcodeListener, null, jsonData);
+    makeDataRequest(BARCODE_URL, barcodeListener, genericErrorListener, jsonData);
   }
 
   @Override public void fetchVehicle() {
@@ -339,7 +347,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
       e.printStackTrace();
     }
 
-    makeDataRequest(VEHICLE_URL, vehicleListener, null, jsonData);
+    makeDataRequest(VEHICLE_URL, vehicleListener, genericErrorListener, jsonData);
   }
 
   @Override public void fetchDriver() {
@@ -350,7 +358,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
       e.printStackTrace();
     }
 
-    makeDataRequest(DRIVER_URL, driverListener, null, jsonData);
+    makeDataRequest(DRIVER_URL, driverListener, genericErrorListener, jsonData);
   }
 
   private void showMessagePerStatus(int statusCode) {

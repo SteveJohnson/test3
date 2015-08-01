@@ -1,6 +1,8 @@
 package com.loginext.shipme.common;
 
 public interface AppConstants {
+  public static final String DATE_FORMAT_1 = "yyyy-MM-dd'T'HH:mm:ssZ";
+  
   public static final String CONSIGNMENT_TYPE_URL = "http://tlm.cloudapp.net:8080/LogiNextService/LookupController/retrieveLookupForShipment";
   public static final String ORIGIN_URL = "http://tlm.cloudapp.net:8080/LogiNextService/ClientBranchController/retrieveClientBranchHubJSON";
   public static final String DESTINATION_URL = "http://tlm.cloudapp.net:8080/LogiNextService/ClientNodeController/retrieveClientNodeByJSON";
