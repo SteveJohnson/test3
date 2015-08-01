@@ -1,5 +1,7 @@
 package com.loginext.shipme.presenter;
 
+import com.loginext.shipme.model.ConsignmentDetails;
+
 
 public interface BasePresenter {
 
@@ -17,6 +19,6 @@ public interface BasePresenter {
 
   abstract public void setObserver(RequesterView requesterView);
 
-  abstract public void createConsignment();
+  abstract public void createConsignment(ConsignmentDetails consignmentDetails);
 
 }

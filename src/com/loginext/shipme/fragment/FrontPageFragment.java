@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,10 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.loginext.shipme.R;
 import com.loginext.shipme.model.Barcode;
@@ -31,8 +35,12 @@ import com.loginext.shipme.presenter.BasePresenter;
 import com.loginext.shipme.presenter.BasePresenterImp;
 import com.loginext.shipme.presenter.RequesterView;
 
-public class FrontPageFragment extends Fragment implements RequesterView, OnClickListener{
+public class FrontPageFragment extends Fragment implements RequesterView, OnClickListener, OnItemSelectedListener{
   private BasePresenter basePresenter;
+
+  /**
+   * View Elements
+   */
   private EditText mLRNumber;
   private AutoCompleteTextView mOrigin;
   private AutoCompleteTextView mDestination;
@@ -43,18 +51,36 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   private EditText mDriverPhoneNumber;
   private EditText mVehicleType;
   private EditText mVehicleCapacity;
-  private EditText mWeight;
-  private EditText mTripId;
+  @SuppressWarnings("unused") private EditText mWeight;
+  @SuppressWarnings("unused") private EditText mTripId;
   private EditText mTripDate;
-  private EditText mVolume;
+  @SuppressWarnings("unused") private EditText mVolume;
   private EditText mNumberOfItems;
   private EditText mChallanNumber;
   private EditText mSealNumber;
-  private EditText mBaName;
+  @SuppressWarnings("unused") private EditText mBaName;
   private EditText mVehicleReportingTime;
   private Button mSubmit;
   private SlideDateTimePicker.Builder mSlideDateTimePickerBuilder;
   private SlideDateTimePicker mSlideDateTimePicker;
+
+  /**
+   * Variables
+   */
+  private long simID;
+  private String modeOfTransport;
+  private double originDestinationLatitude;
+  private double originDestinationLongitude;
+  private String clientShipmentID;
+  private double originLatitude;
+  private double originLongitude;
+  private long clientId;
+  private long branchId;
+  private long vehicleId;
+  private long driverId;
+  private String tripDate;
+  private long createByUserId;
+  private long updatedByUserId;
 
   private SlideDateTimeListener listener = new SlideDateTimeListener() {
 
@@ -99,6 +125,7 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     mDestination = (AutoCompleteTextView) view.findViewById(R.id.destination);
     mDestination.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
     mDestination.setOnClickListener(this);
+    mDestination.setOnItemSelectedListener(this);
 
     mConsignmentType = (AutoCompleteTextView) view.findViewById(R.id.consignment_type);
     mConsignmentType.setDropDownBackgroundDrawable(new ColorDrawable(getActivity().getApplicationContext().getResources().getColor(R.color.purple_900_combination_2)));
@@ -117,8 +144,14 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     mDriverName.setOnClickListener(this);
 
     mDriverPhoneNumber = (EditText) view.findViewById(R.id.driver_phone_number);
+    disableEditText(mDriverPhoneNumber);
+
     mVehicleType = (EditText) view.findViewById(R.id.vehicle_type);
+    disableEditText(mVehicleType);
+
     mVehicleCapacity = (EditText) view.findViewById(R.id.vehicle_capacity);
+    disableEditText(mVehicleCapacity);
+
     mWeight = (EditText) view.findViewById(R.id.weight);
     mTripId = (EditText) view.findViewById(R.id.trip_id);
 
@@ -270,39 +303,60 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
       mSlideDateTimePicker.show();
       break;
     case R.id.submit:
-      ConsignmentDetails consignmentDetails = new ConsignmentDetails();
-      consignmentDetails.setSimId(1);//TODO
-      consignmentDetails.setOriginAddr(mOrigin.getText().toString());
-      consignmentDetails.setDestinationAddr(mDestination.getText().toString());
-      consignmentDetails.setShipmentTypeCd(mConsignmentType.getText().toString());
-      consignmentDetails.setModeOfTransport("");//TODO
-      consignmentDetails.setDeviceBarCode(mBarCode.getText().toString());
-      consignmentDetails.setVehicleNumber(mVehicleNumber.getText().toString());
-      consignmentDetails.setOriginDestinationLatitude(1L);//TODO
-      consignmentDetails.setOriginDestinationLongitude(1L);//TODO
-      consignmentDetails.setClientShipmentId("");//TODO
-      consignmentDetails.setOriginLatitude(1L);//TODO
-      consignmentDetails.setOriginLongitude(1L);//TODO
-      consignmentDetails.setClientId(0);//TODO
-      consignmentDetails.setClientBranchId(0);//TODO
-      consignmentDetails.setDestinationClientNodeId(0);
-      consignmentDetails.setNumberOfItems(0);//TODO
-      consignmentDetails.setChallanNumber("");//TODO
-      consignmentDetails.setSealNumber("");//TODO
-      consignmentDetails.setVehicleNumber("");//TODO
-      consignmentDetails.setVehicleId(0);//TODO
-      consignmentDetails.setDriverId(0);//TODO
-      consignmentDetails.setTripDate("");//TODO
-      consignmentDetails.setLrNumber(mLRNumber.getText().toString());
-      consignmentDetails.setCreatedByUserId(0);//TODO
-      consignmentDetails.setUpdateByUserId(0);//TODO
+      try {
+        ConsignmentDetails consignmentDetails = new ConsignmentDetails();
+        consignmentDetails.setSimId(simID);
+        consignmentDetails.setOriginAddr(mOrigin.getText().toString());
+        consignmentDetails.setDestinationAddr(mDestination.getText().toString());
+        consignmentDetails.setShipmentTypeCd(mConsignmentType.getText().toString());
+        consignmentDetails.setModeOfTransport(modeOfTransport);
+        consignmentDetails.setDeviceBarCode(mBarCode.getText().toString());
+        consignmentDetails.setVehicleNumber(mVehicleNumber.getText().toString());
+        consignmentDetails.setOriginDestinationLatitude(originDestinationLatitude);
+        consignmentDetails.setOriginDestinationLongitude(originDestinationLongitude);
+        consignmentDetails.setClientShipmentId(clientShipmentID);
+        consignmentDetails.setOriginLatitude(originLatitude);
+        consignmentDetails.setOriginLongitude(originLongitude);
+        consignmentDetails.setClientId(clientId);
+        consignmentDetails.setClientBranchId(branchId);
+        consignmentDetails.setDestinationClientNodeId(0);
+        consignmentDetails.setNumberOfItems(Integer.parseInt(mNumberOfItems.getText().toString()));
+        consignmentDetails.setChallanNumber(mChallanNumber.getText().toString());
+        consignmentDetails.setSealNumber(mSealNumber.getText().toString());
+        consignmentDetails.setVehicleId(vehicleId);
+        consignmentDetails.setDriverId(driverId);
+        consignmentDetails.setTripDate(tripDate);
+        consignmentDetails.setLrNumber(mLRNumber.getText().toString());
+        consignmentDetails.setCreatedByUserId(createByUserId);
+        consignmentDetails.setUpdateByUserId(updatedByUserId);
 
-      basePresenter.createConsignment();
+        basePresenter.createConsignment(consignmentDetails);
+      } catch (Exception e) {
+        e.printStackTrace();
+        Toast.makeText(getActivity(), "Failed to create a consignment", Toast.LENGTH_SHORT).show();
+      }
+
       break;
     default:
       //DO Nothing
       break;
     }
+  }
+
+  private void disableEditText(EditText editText) {
+    editText.setFocusable(false);
+    editText.setEnabled(false);
+    editText.setCursorVisible(false);
+    editText.setKeyListener(null);
+    editText.setBackgroundColor(Color.TRANSPARENT); 
+  }
+
+  @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+    Toast.makeText(getActivity(), "Item Selected at position " + position, Toast.LENGTH_SHORT).show();
+  }
+
+  @Override public void onNothingSelected(AdapterView<?> parent) {
+
   }
 
 }

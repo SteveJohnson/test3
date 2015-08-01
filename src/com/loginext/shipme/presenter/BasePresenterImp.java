@@ -3,6 +3,7 @@ package com.loginext.shipme.presenter;
 import java.util.List;
 
 import com.loginext.shipme.model.Barcode;
+import com.loginext.shipme.model.ConsignmentDetails;
 import com.loginext.shipme.model.ConsignmentType;
 import com.loginext.shipme.model.Destination;
 import com.loginext.shipme.model.Driver;
@@ -50,8 +51,8 @@ public class BasePresenterImp implements BasePresenter, ResponseListener{
     baseInteractor.fetchDriver();
   }
 
-  @Override public void createConsignment() {
-    baseInteractor.createConsignment();
+  @Override public void createConsignment(ConsignmentDetails consignmentDetails) {
+    baseInteractor.createConsignment(consignmentDetails);
   }
 
   @Override public void onConsignmentTypeResponse(List<ConsignmentType> consignmentTypes) {

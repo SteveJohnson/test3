@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import com.android.volley.Request.Method;
 import com.android.volley.Response.ErrorListener;
@@ -18,13 +19,14 @@ import com.loginext.shipme.common.AppConstants;
 import com.loginext.shipme.common.LoginextJsonObjectRequest;
 import com.loginext.shipme.common.VolleyHelper;
 import com.loginext.shipme.model.Barcode;
+import com.loginext.shipme.model.ConsignmentDetails;
 import com.loginext.shipme.model.ConsignmentType;
 import com.loginext.shipme.model.Destination;
 import com.loginext.shipme.model.Driver;
 import com.loginext.shipme.model.Origin;
 import com.loginext.shipme.model.Vehicle;
 
-public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppConstants{
+public class BaseInteractorImp implements BaseInteractor, AppConstants{
   private Context context;
   private ResponseListener responseListener;
 
@@ -265,19 +267,41 @@ public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppCons
     }
   };
 
+  private Listener<JSONObject> createConsignmentListener = new Listener<JSONObject>() {
+
+    @Override public void onResponse(JSONObject response) {
+      if(responseListener != null) {
+        if(response != null) {
+
+        }
+      }
+    }
+  };
+
+  private ErrorListener createConsignmentError = new ErrorListener() {
+    @Override public void onErrorResponse(VolleyError error) {
+      try {
+        showMessagePerStatus(error.networkResponse.statusCode);
+
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
+    }
+  };
+
   public BaseInteractorImp(ResponseListener responseListener) {
     context = ShipmentApplication.getInstance().getApplicationContext();
     this.responseListener = responseListener;
   }
 
-  private void makeDataRequest(String url, Listener<JSONObject> listener, JSONObject jsonData) {
-    LoginextJsonObjectRequest request = new LoginextJsonObjectRequest(Method.POST, url, jsonData, listener, this);
+  private void makeDataRequest(String url, Listener<JSONObject> listener, ErrorListener errorListener, JSONObject jsonData) {
+    LoginextJsonObjectRequest request = new LoginextJsonObjectRequest(Method.POST, url, jsonData, listener, errorListener);
     VolleyHelper.getInstance(context).getRequestQueue().add(request);
   }
 
   @Override public void fetchConsignmentType() {
     JSONObject jsonData = new JSONObject();
-    makeDataRequest(CONSIGNMENT_TYPE_URL, consignmentTypeListener, jsonData);
+    makeDataRequest(CONSIGNMENT_TYPE_URL, consignmentTypeListener, null, jsonData);
   }
 
   @Override public void fetchOrigin() {
@@ -288,7 +312,7 @@ public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppCons
       e.printStackTrace();
     }
 
-    makeDataRequest(ORIGIN_URL, originListener, jsonData);
+    makeDataRequest(ORIGIN_URL, originListener, null, jsonData);
   }
 
   @Override public void fetchDestination() {
@@ -299,12 +323,12 @@ public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppCons
       e.printStackTrace();
     }
 
-    makeDataRequest(DESTINATION_URL, destinationListener, jsonData);
+    makeDataRequest(DESTINATION_URL, destinationListener, null, jsonData);
   }
 
   @Override public void fetchBarcode() {
     JSONObject jsonData = new JSONObject();
-    makeDataRequest(BARCODE_URL, barcodeListener, jsonData);
+    makeDataRequest(BARCODE_URL, barcodeListener, null, jsonData);
   }
 
   @Override public void fetchVehicle() {
@@ -315,7 +339,7 @@ public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppCons
       e.printStackTrace();
     }
 
-    makeDataRequest(VEHICLE_URL, vehicleListener, jsonData);
+    makeDataRequest(VEHICLE_URL, vehicleListener, null, jsonData);
   }
 
   @Override public void fetchDriver() {
@@ -326,15 +350,77 @@ public class BaseInteractorImp implements BaseInteractor, ErrorListener, AppCons
       e.printStackTrace();
     }
 
-    makeDataRequest(DRIVER_URL, driverListener, jsonData);
+    makeDataRequest(DRIVER_URL, driverListener, null, jsonData);
   }
 
-  @Override public void onErrorResponse(VolleyError error) {
-
+  private void showMessagePerStatus(int statusCode) {
+    switch (statusCode) {
+    case 200: 
+      Toast.makeText(context, "Consignment created successfully.", Toast.LENGTH_SHORT).show();
+      break;
+    case 400:
+      Toast.makeText(context, "Unable to create shipment.", Toast.LENGTH_SHORT).show();
+      break;
+    case 401:
+      Toast.makeText(context, "Failed to create consignment.", Toast.LENGTH_SHORT).show();
+      break;
+    case 402:
+      Toast.makeText(context, "Shipment created successfuly. Failed to create via points.", Toast.LENGTH_SHORT).show();
+      break;
+    case 403:
+      Toast.makeText(context, "Shipment created successfuly.Failed to create trip.", Toast.LENGTH_SHORT).show();
+      break;
+    case 404:
+      Toast.makeText(context, "Error occurred in creating consignment.", Toast.LENGTH_SHORT).show();
+      break;
+    case 405:
+      Toast.makeText(context, "Shipment created successfuly. Route configuration cound not be found.", Toast.LENGTH_SHORT).show();
+      break;
+    case 406:
+      Toast.makeText(context, "Shipment created successfuly. Failed to create trip. Route configuration cound not be found.", Toast.LENGTH_SHORT).show();
+      break;
+    case 407:
+      Toast.makeText(context, "LR Number already exists.", Toast.LENGTH_SHORT).show();
+      break;
+    default:
+      break;
+    }
   }
 
-  @Override public void createConsignment() {
+  @Override public void createConsignment(ConsignmentDetails consignmentDetails) {
+    JSONObject jsonData = new JSONObject();
+    try {
+      jsonData.putOpt(SIMId, consignmentDetails.getSimId());
+      jsonData.putOpt(originAddr, consignmentDetails.getOriginAddr());
+      jsonData.putOpt(destinationAddr, consignmentDetails.getDestinationAddr());
+      jsonData.putOpt(shipmentTypeCd, consignmentDetails.getShipmentTypeCd());
+      jsonData.putOpt(modeOfTransport, consignmentDetails.getModeOfTransport());
+      jsonData.putOpt(deviceBarcode, consignmentDetails.getDeviceBarCode());
+      jsonData.putOpt(vehicleNum, consignmentDetails.getVehicleNumber());
+      jsonData.putOpt(origDestLatitude, consignmentDetails.getOriginDestinationLatitude());
+      jsonData.putOpt(origDestLongitude, consignmentDetails.getOriginDestinationLongitude());
+      jsonData.putOpt(clientShipmentId, consignmentDetails.getClientShipmentId());
+      jsonData.putOpt(originLatitude, consignmentDetails.getOriginLatitude());
+      jsonData.putOpt(originLongitude, consignmentDetails.getOriginLongitude());
+      jsonData.putOpt(clientId, consignmentDetails.getClientId());
+      jsonData.putOpt(clientBranchId, consignmentDetails.getClientBranchId());
+      jsonData.putOpt(destClientNodeId, consignmentDetails.getDestinationClientNodeId());
+      jsonData.putOpt(numberOfItems, consignmentDetails.getNumberOfItems());
+      jsonData.putOpt(challanNumber, consignmentDetails.getChallanNumber());
+      jsonData.putOpt(sealNumber, consignmentDetails.getSealNumber());
+      jsonData.putOpt(vehicleNumber, consignmentDetails.getVehicleNumber());
+      jsonData.putOpt(vehicleId, consignmentDetails.getVehicleId());
+      jsonData.putOpt(driverId, consignmentDetails.getDriverId());
+      jsonData.putOpt(tripDate, consignmentDetails.getTripDate());
+      jsonData.putOpt(LRNumber, consignmentDetails.getLrNumber());
+      jsonData.putOpt(createdByUserId, consignmentDetails.getCreatedByUserId());
+      jsonData.putOpt(updatedByUserId, consignmentDetails.getUpdateByUserId());
 
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+
+    makeDataRequest(BARCODE_URL, createConsignmentListener, createConsignmentError, jsonData);
   }
 
 }

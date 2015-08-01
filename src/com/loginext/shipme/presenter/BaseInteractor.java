@@ -1,5 +1,7 @@
 package com.loginext.shipme.presenter;
 
+import com.loginext.shipme.model.ConsignmentDetails;
+
 public interface BaseInteractor {
 
   public abstract void fetchConsignmentType();
@@ -14,6 +16,6 @@ public interface BaseInteractor {
 
   public abstract void fetchDriver();
 
-  abstract public void createConsignment();
+  abstract public void createConsignment(ConsignmentDetails consignmentDetails);
 
 }
