@@ -309,6 +309,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
 
   private ErrorListener createConsignmentError = new ErrorListener() {
     @Override public void onErrorResponse(VolleyError error) {
+      Log.d(BaseInteractorImp.class.getSimpleName(), "Error in retreival = " + error);
       try {
         showMessagePerStatus(error.networkResponse.statusCode);
 
@@ -363,6 +364,12 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
 
   @Override public void fetchBarcode() {
     JSONObject jsonData = new JSONObject();
+    try {
+      jsonData.putOpt(CLIENT_ID, "23");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+
     makeDataRequest(BARCODE_URL, barcodeListener, genericErrorListener, jsonData);
   }
 
@@ -455,7 +462,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
       e.printStackTrace();
     }
 
-    makeDataRequest(BARCODE_URL, createConsignmentListener, createConsignmentError, jsonData);
+    makeDataRequest(CREATE_CONSIGNMENT_URL, createConsignmentListener, createConsignmentError, jsonData);
   }
 
 }

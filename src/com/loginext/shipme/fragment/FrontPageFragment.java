@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -98,32 +99,48 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
 
   private SlideDateTimeListener tripDateListener = new SlideDateTimeListener() {
     @Override public void onDateTimeSet(Date date) {
-      mTripDate.setText(date.toString());
+      try {
+        mTripDate.setText(date.toString());
 
-      tripDate = parseDate(date);
+        tripDate = parseDate(date);
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
   private SlideDateTimeListener vehicleReportingTimeListener = new SlideDateTimeListener() {
     @Override public void onDateTimeSet(Date date) {
-      mVehicleReportingTime.setText(date.toString());
+      try { 
+        mVehicleReportingTime.setText(date.toString());
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
   private OnItemClickListener originItemClickListener = new OnItemClickListener() {
     @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      Origin origin = origins.get(position);
-      originLatitude = Double.parseDouble(origin.getLatitude());
-      originLongitude = Double.parseDouble(origin.getLongitude());
-      branchId = Long.parseLong(origin.getClientBranchId());
+      try {
+        Origin origin = origins.get(position);
+        originLatitude = Double.parseDouble(origin.getLatitude());
+        originLongitude = Double.parseDouble(origin.getLongitude());
+        branchId = Long.parseLong(origin.getClientBranchId());
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
   private OnItemClickListener destinationItemClickListener = new OnItemClickListener() {
     @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      Destination destination = destinations.get(position);
-      originDestinationLatitude = Double.parseDouble(destination.getLatitude());
-      originDestinationLongitude = Double.parseDouble(destination.getLongitude());
+      try {
+        Destination destination = destinations.get(position);
+        originDestinationLatitude = Double.parseDouble(destination.getLatitude());
+        originDestinationLongitude = Double.parseDouble(destination.getLongitude());
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
@@ -134,21 +151,29 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
 
   private OnItemClickListener vehicleNumberItemClickListener = new OnItemClickListener() {
     @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      Vehicle vehicle = vehicles.get(position);
-      mVehicleType.setText(vehicle.getVehicleType());
-      mVehicleCapacity.setText(vehicle.getCapacityInUnits());
-      String barcode = findBarCode(vehicle.getDeviceId());
-      mBarCode.setText(barcode);
-      simID = Long.parseLong(vehicle.getSimId());
-      vehicleId = Long.parseLong(vehicle.getVehicleId());
+      try {
+        Vehicle vehicle = vehicles.get(position);
+        mVehicleType.setText(vehicle.getVehicleType());
+        mVehicleCapacity.setText(vehicle.getCapacityInUnits());
+        String barcode = findBarCode(vehicle.getDeviceId());
+        mBarCode.setText(barcode);
+        simID = Long.parseLong(vehicle.getSimId());
+        vehicleId = Long.parseLong(vehicle.getVehicleId());
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
   private OnItemClickListener driverNameItemClickListener = new OnItemClickListener() {
     @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      Driver driver = drivers.get(position);
-      mDriverPhoneNumber.setText(driver.getPhoneNumber());
-      driverId = Long.parseLong(driver.getDriverId());
+      try {
+        Driver driver = drivers.get(position);
+        mDriverPhoneNumber.setText(driver.getPhoneNumber());
+        driverId = Long.parseLong(driver.getDriverId());
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
   };
 
@@ -176,6 +201,7 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     return rootView;
   }
 
+  @SuppressLint("CutPasteId")
   private void findViewByIds(View view) {
     mLRNumber = (EditText) view.findViewById(R.id.lr_number);
 
@@ -225,7 +251,7 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
     mTripDate = (EditText) view.findViewById(R.id.trip_date);
     mTripDate.setOnClickListener(this);
 
-    mVolume = (EditText) view.findViewById(R.id.number_of_items);
+    mNumberOfItems = (EditText) view.findViewById(R.id.number_of_items);
     mChallanNumber = (EditText) view.findViewById(R.id.challan_number);
     mSealNumber = (EditText) view.findViewById(R.id.seal_number);
     mBaName = (EditText) view.findViewById(R.id.ba_name);
@@ -238,12 +264,12 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   private void setValues() {
-    /*basePresenter.fetchOrigin();
+    basePresenter.fetchOrigin();
     basePresenter.fetchDestination();
-    basePresenter.fetchBarcode();*/
+    basePresenter.fetchBarcode();
     basePresenter.fetchVehicle();
-    /*basePresenter.fetchDriver();
-    basePresenter.fetchConsignmentType();*/
+    basePresenter.fetchDriver();
+    basePresenter.fetchConsignmentType();
   }
 
   @Override public void onConsignmentTypeReceived(List<ConsignmentType> consignmentTypes) {
