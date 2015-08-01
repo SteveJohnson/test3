@@ -1,17 +1,22 @@
 package com.loginext.shipme.presenter;
 
+
 public interface BasePresenter {
 
-  public void fetchConsignmentType();
+  abstract public void fetchConsignmentType();
 
-  public void fetchOrigin();
+  abstract public void fetchOrigin();
 
-  public void fetchDestination();
+  abstract public void fetchDestination();
 
-  public void fetchBarcode();
+  abstract public void fetchBarcode();
 
-  public void fetchVehicle();
+  abstract public void fetchVehicle();
 
-  public void fetchDriver();
+  abstract public void fetchDriver();
+
+  abstract public void setObserver(RequesterView requesterView);
+
+  abstract public void createConsignment();
 
 }

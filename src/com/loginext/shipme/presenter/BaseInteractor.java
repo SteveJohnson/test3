@@ -14,4 +14,6 @@ public interface BaseInteractor {
 
   public abstract void fetchDriver();
 
+  abstract public void createConsignment();
+
 }

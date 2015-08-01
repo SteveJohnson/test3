@@ -2,17 +2,25 @@ package com.loginext.shipme.presenter;
 
 import java.util.List;
 
+import com.loginext.shipme.model.Barcode;
+import com.loginext.shipme.model.ConsignmentType;
+import com.loginext.shipme.model.Destination;
+import com.loginext.shipme.model.Driver;
+import com.loginext.shipme.model.Origin;
+import com.loginext.shipme.model.Vehicle;
+
 public interface ResponseListener {
 
-  public void onConsignmentTypeResponse(List<String> lookupCds);
+  abstract public void onConsignmentTypeResponse(List<ConsignmentType> consignmentTypes);
 
-  public void onOriginReponse(List<String> origins);
+  abstract public void onOriginReponse(List<Origin> origins);
 
-  public void onDestinationResponse(List<String> destinations);
+  abstract public void onDestinationResponse(List<Destination> destinations);
 
-  public void onBarcodeResponse(List<String> barcodes, List<String> deviceIds);
+  abstract public void onBarcodeResponse(List<Barcode> barcodes);
 
-  public void onVehicleResponse(List<String> capacitiesInVolume, List<String> deviceIds, List<String> vehicleNumbers, List<String> vehicleTypes);
+  abstract public void onVehicleResponse(List<Vehicle> vehicles);
 
-  public void onDriverResponse(List<String> driverNames, List<String> phoneNumbers);
+  abstract public void onDriverResponse(List<Driver> drivers);
+
 }

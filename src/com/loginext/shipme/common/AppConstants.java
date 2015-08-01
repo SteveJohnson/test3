@@ -8,5 +8,5 @@ public interface AppConstants {
   public static final String VEHICLE_URL = "http://tlm.cloudapp.net:8080/LogiNextService/VehicleMasterController/retrieveVehicleForCreateShipmentJSON";
   public static final String DRIVER_URL = "http://tlm.cloudapp.net:8080/LogiNextService/DriverMasterController/retrieveNotAssignedDriversTripJSON";
 
-  public static final String CLIENT_ID = "clientid";
+  public static final String CLIENT_ID = "clientId";
 }

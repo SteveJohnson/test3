@@ -13,6 +13,7 @@ public class Vehicle {
   private String vehicleId;
   private String vehicleName;
   private String vehicleNumber;
+  private String vehicleType;
 
   public String getAssignDeliveryBoyFlag() {
     return assignDeliveryBoyFlag;
@@ -85,5 +86,11 @@ public class Vehicle {
   }
   public void setVehicleNumber(String vehicleNumber) {
     this.vehicleNumber = vehicleNumber;
+  }
+  public String getVehicleType() {
+    return vehicleType;
+  }
+  public void setVehicleType(String vehicleType) {
+    this.vehicleType = vehicleType;
   }
 }
