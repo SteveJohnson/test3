@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.Request.Method;
@@ -227,6 +228,31 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
             }
 
             responseListener.onVehicleResponse(vehicles);
+          } else {
+            JSONObject object = response.optJSONObject("driverMaster");
+            List<Vehicle> vehicles = new ArrayList<Vehicle>();
+
+            if(object != null) {
+              Vehicle vehicle = new Vehicle();
+
+              vehicle.setAssignDeliveryBoyFlag(object.optString("assignDeliveryBoyFlag"));
+              vehicle.setCreatedByUserId(object.optString("createdByUserId"));
+              vehicle.setId(object.optString("id"));
+              vehicle.setUpdatedByUserId(object.optString("updatedByUserId"));
+              vehicle.setCapacityInUnits(object.optString("capacityInUnits"));
+              vehicle.setCapacityInVolume(object.optString("capacityInVolume"));
+              vehicle.setClientId(object.optString("clientId"));
+              vehicle.setDeviceId(object.optString("deviceId"));
+              vehicle.setSimId(object.optString("simId"));
+              vehicle.setVehicleId(object.optString("vehicleId"));
+              vehicle.setVehicleName(object.optString("vehicleName"));
+              vehicle.setVehicleNumber(object.optString("vehicleNumber"));
+              vehicle.setVehicleType(object.optString("vehicleType"));
+
+              vehicles.add(vehicle);
+            }
+
+            responseListener.onVehicleResponse(vehicles);
           }
         }
       }
@@ -263,7 +289,8 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
             }
 
             responseListener.onDriverResponse(drivers);
-          }
+
+          } 
         }
       }
     }
@@ -293,7 +320,7 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
 
   private ErrorListener genericErrorListener = new ErrorListener() {
     @Override public void onErrorResponse(VolleyError error) {
-
+      Log.d(BaseInteractorImp.class.getSimpleName(), "Error in retreival = " + error);
     }
   };
 

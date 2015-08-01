@@ -238,12 +238,12 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
   }
 
   private void setValues() {
-    basePresenter.fetchOrigin();
+    /*basePresenter.fetchOrigin();
     basePresenter.fetchDestination();
-    basePresenter.fetchBarcode();
+    basePresenter.fetchBarcode();*/
     basePresenter.fetchVehicle();
-    basePresenter.fetchDriver();
-    basePresenter.fetchConsignmentType();
+    /*basePresenter.fetchDriver();
+    basePresenter.fetchConsignmentType();*/
   }
 
   @Override public void onConsignmentTypeReceived(List<ConsignmentType> consignmentTypes) {
