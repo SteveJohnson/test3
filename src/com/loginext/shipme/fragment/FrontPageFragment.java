@@ -468,7 +468,7 @@ public class FrontPageFragment extends Fragment implements RequesterView, OnClic
         continue;
       }
 
-      return barcode.getDeviceId();
+      return barcode.getBarcode();
     }
 
     return "";

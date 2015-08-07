@@ -301,7 +301,12 @@ public class BaseInteractorImp implements BaseInteractor, AppConstants{
     @Override public void onResponse(JSONObject response) {
       if(responseListener != null) {
         if(response != null) {
+        	try {
+                showMessagePerStatus(Integer.parseInt(response.optString("statusCode")));
 
+              } catch(Exception e) {
+                e.printStackTrace();
+              }
         }
       }
     }
